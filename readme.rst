@@ -2,7 +2,7 @@
 Kicap Karan - Koperasi Server
 ###################
 
-Back of Koperasi Project
+Backend of Koperasi Project
 
 *******************
 Release Information
@@ -15,5 +15,5 @@ License
 Created By Kicap Karan
 Facebook https://www.facebook.com/kicap.karan
 
-Website https://kicap-karan.com
+Website https://kicap-karan.com/index.html
 

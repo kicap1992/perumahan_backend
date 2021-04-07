@@ -32,6 +32,16 @@ class Model extends CI_Model {
     return $query;
   }
 
+  function tampil_data_where1($namatabel,$array,$bintang) //gunakan ini untuk menampilkan tabel yg lebih spesifik 'where'
+  {
+    $this->db->select($bintang);
+    $this->db->from($namatabel);
+    $this->db->where($array);
+    // $this->db->limit(1);
+    $query = $this->db->get();
+    return $query;
+  }
+
   function tampil_data_keseluruhan_order_by($namatabel,$order_by,$order) //gunakan ini untuk menampilkan tabel yg lebih spesifik 'where'
   {
     $this->db->select("*");
@@ -142,6 +152,34 @@ class Model extends CI_Model {
     }
   }
 
+  function upload_foto($value,$key,$cek_no,$kategori) {
+		
+		$data = $value; 
+		$data =  substr($data, 0, -2);
+		// $data = 'data:image/'.$data;
+		// print_r($data);
+		// define('UPLOAD_DIR', 'images/');
+    $image_parts = explode(";base64,", $data);
+    $image_type_aux = explode("image/", $image_parts[0]);
+    $image_type = $image_type_aux[1];
+    $image_base64 = base64_decode($image_parts[1]);
+    // if ($e == 1) {
+		// 	$edit = '_edit';
+		// 	$file = 'images/'.$cek_no. '/foto'.$edit.$key.'.png';
+		// }
+		// else
+		// {
+		// 	$edit = '';
+    if ($kategori == 'berita') {
+      $file = 'assets/admin_assets/images/berita/'.$cek_no. '/foto'.$key.'.png';
+    }
+    if ($kategori == 'iklan') {
+      $file = 'assets/admin_assets/images/iklan/'.$cek_no. '/foto'.$key.'.png';
+    }
+    file_put_contents($file, $image_base64);
+		
+	}
+
 
   function bulan($bulan) 
   {
@@ -203,37 +241,68 @@ class Model extends CI_Model {
     return $bulannya;
   }
 
-  function qrcode_buku($kode){
-    include "phpqrcode/qrlib.php"; 
-    $kode = $kode;
-    
-    // $PNG_TEMP_DIR = 'images/'.$kategori;
-    
-    $PNG_WEB_DIR = 'images/buku/';
-
-    if (!file_exists($PNG_WEB_DIR))
-      mkdir($PNG_WEB_DIR);
-        
-    $errorCorrectionLevel = 'H';
-
-    $matrixPointSize = 10;
-
-    $filename =$PNG_WEB_DIR.md5($kode).'.png';
-    QRcode::png($kode, $filename, $errorCorrectionLevel, $matrixPointSize, 2); 
-
-    if (file_exists($PNG_WEB_DIR.md5($kode).'.png') > 0) {
-      return "ada";
-    }else{
-      return "tiada";
+  function hari($hari)
+  {
+    // $ini = ''
+    switch ($hari) {
+      case 'Sunday':
+        $ini = 'Ahad';
+        break;
+      case 'Monday':
+        $ini = 'Senin';
+        break;
+      case 'Tuesday':
+        $ini = 'Selasa';
+        break;
+      case 'Wednesday':
+        $ini = 'Rabu';
+        break;
+      case 'Thursday':
+        $ini = 'Kamis';
+        break;
+      case 'Friday':
+        $ini = 'Jumat';
+        break;
+      case 'Saturday':
+        $ini = 'Sabtu';
+        break;
+      
     }
+
+    return $ini;
   }
 
-  function cek_last_ai(){
-    return $this->db->query("SELECT `AUTO_INCREMENT` as no
-      FROM  INFORMATION_SCHEMA.TABLES
-      WHERE TABLE_SCHEMA = '".$this->db->database."'
-      AND   TABLE_NAME   = 'tb_map_perpustakaan'");
+  // function qrcode_buku($kode){
+  //   include "phpqrcode/qrlib.php"; 
+  //   $kode = $kode;
+    
+  //   // $PNG_TEMP_DIR = 'images/'.$kategori;
+    
+  //   $PNG_WEB_DIR = 'images/buku/';
 
-  }
+  //   if (!file_exists($PNG_WEB_DIR))
+  //     mkdir($PNG_WEB_DIR);
+        
+  //   $errorCorrectionLevel = 'H';
+
+  //   $matrixPointSize = 10;
+
+  //   $filename =$PNG_WEB_DIR.md5($kode).'.png';
+  //   QRcode::png($kode, $filename, $errorCorrectionLevel, $matrixPointSize, 2); 
+
+  //   if (file_exists($PNG_WEB_DIR.md5($kode).'.png') > 0) {
+  //     return "ada";
+  //   }else{
+  //     return "tiada";
+  //   }
+  // }
+
+  function cek_last_ai($tables){
+		return $this->db->query("SELECT `AUTO_INCREMENT` as no
+			FROM  INFORMATION_SCHEMA.TABLES
+			WHERE TABLE_SCHEMA = '".$this->db->database."'
+			AND   TABLE_NAME   = '".$tables."'")->result()[0]->no;
+
+	}
 
 }
