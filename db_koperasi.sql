@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 11, 2021 at 11:53 AM
+-- Generation Time: Jun 23, 2021 at 08:32 AM
 -- Server version: 10.4.17-MariaDB
 -- PHP Version: 7.4.15
 
@@ -51,7 +51,7 @@ CREATE TABLE `tb_login` (
   `password` varchar(50) NOT NULL,
   `level` varchar(50) NOT NULL,
   `nik_admin` varchar(16) DEFAULT NULL,
-  `nik_user` varchar(16) DEFAULT NULL
+  `nik_user` varchar(18) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
@@ -59,8 +59,7 @@ CREATE TABLE `tb_login` (
 --
 
 INSERT INTO `tb_login` (`id_login`, `username`, `password`, `level`, `nik_admin`, `nik_user`) VALUES
-(1, 'admin_koperasi', 'admin_koperasi', 'admin', '1234567890123456', NULL),
-(2, 'guru 1', 'guru 1', 'user', NULL, '7894561230123654');
+(1, 'admin_koperasi', 'admin_koperasi', 'admin', '1234567890123456', NULL);
 
 -- --------------------------------------------------------
 
@@ -69,16 +68,17 @@ INSERT INTO `tb_login` (`id_login`, `username`, `password`, `level`, `nik_admin`
 --
 
 CREATE TABLE `tb_user` (
-  `nik_user` varchar(16) NOT NULL,
-  `nama` varchar(100) NOT NULL
+  `nik_user` varchar(18) NOT NULL,
+  `nama` varchar(100) NOT NULL,
+  `alamat` text DEFAULT NULL,
+  `tanggal_pendaftaran` datetime DEFAULT NULL,
+  `simpanan_pokok` varchar(10) DEFAULT NULL,
+  `simpanan_wajib` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
+  `total_simpanan_wajib` varchar(7) DEFAULT NULL,
+  `simpanan_sukarela` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
+  `status` varchar(11) DEFAULT 'Aktif',
+  `tanggal_berhenti` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
---
--- Dumping data for table `tb_user`
---
-
-INSERT INTO `tb_user` (`nik_user`, `nama`) VALUES
-('7894561230123654', 'Guru 1');
 
 --
 -- Indexes for dumped tables
@@ -112,7 +112,7 @@ ALTER TABLE `tb_user`
 -- AUTO_INCREMENT for table `tb_login`
 --
 ALTER TABLE `tb_login`
-  MODIFY `id_login` int(4) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id_login` int(4) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- Constraints for dumped tables

@@ -21,11 +21,13 @@ class Home extends CI_Controller {
         $row = array();
         $row[] = $no;
         $row[] = $field->nik_user;
+        // $row[] = "<a href='#' onclick='coba_dulu(".'"'.(string)$field->nik_user.'"'.")'>$field->nik_user</a>";
         $row[] = $field->nama;
         $row[] = $field->tanggal_pendaftaran;
-        $row[] = 'Rp. ' .  number_format($field->simpanan_pokok);
-        $row[] = $field->status;       
-        $row[] = '<center><button type="button" onclick="detail_user('.$field->nik_user.')" class="btn btn-primary btn-circle btn-sm waves-effect waves-light"><i class="ico fa fa-edit"></i></button></center>';
+        // $row[] = 'Rp. ' .  number_format($field->simpanan_pokok);
+        // $row[] = 'Rp. ' .  number_format($field->simpanan_pokok);
+        // $row[] = $field->status;       
+        $row[] = "<center><button type='button' onclick='user_change(".'"'.(string)$field->nik_user.'"'.")' class='btn btn-primary btn-circle btn-sm waves-effect waves-light'><i class='ico fa fa-edit'></i></button></center>";
         $data[] = $row;
       }
 
@@ -193,7 +195,7 @@ class Home extends CI_Controller {
       $cek_data = $this->model->tampil_data_where('tb_user',array('nik_user' => $this->input->post('nik_user')))->result();
       function date_simpanan($a,$b)
       {
-        return strcmp($a['tanggal_simpanan'],$b['tanggal_simpanan']);
+        return strcmp($a['tanggal_simpan'],$b['tanggal_simpan']);
       }
       
       if(count($cek_data) > 0){
@@ -203,7 +205,9 @@ class Home extends CI_Controller {
         usort($ket , 'date_simpanan');
         foreach ($ket as $key => $value) {
           // $data[$i]['no'] = $i;
-          $data[$i]['waktu'] = $value['tanggal_simpanan'];
+          $data[$i]['waktu'] = $value['tanggal_simpan'];
+          $data[$i]['tahun'] = $value['tahun'];
+          $data[$i]['bulan'] = $value['bulan'];
           $data[$i]['ket'] = 'Rp. '. number_format($value['simpanan']);
           // $data[$i]['foto'] = $value['foto'];
 
@@ -225,25 +229,30 @@ class Home extends CI_Controller {
       $cek_data = $this->model->tampil_data_where('tb_user',array('nik_user' => $this->input->post('nik_user')))->result();
       
       if(count($cek_data) > 0){
-        $ket = json_decode($cek_data[0]->simpanan_sukarela,true);
+        $ket = ($cek_data[0]->simpanan_sukarela != null) ? json_decode($cek_data[0]->simpanan_sukarela,true) : null;
         function date_simpanan($a,$b)
         {
-          return strcmp($a['tanggal_simpanan'],$b['tanggal_simpanan']);
+          return strcmp($a['tanggal'],$b['tanggal']);
         }
         /// atur kembali array berdasarkan tanggal
-        usort($ket , 'date_simpanan');
-        foreach ($ket as $key => $value) {
-          // $data[$i]['no'] = $i;
-          $data[$i]['waktu'] = $value['tanggal_simpanan'];
-          $data[$i]['ket'] = 'Rp. '. number_format($value['simpanan']);
-          // $data[$i]['foto'] = $value['foto'];
+        if ($ket != null){
+          usort($ket , 'date_simpanan');
+          foreach ($ket as $key => $value) {
+            // $data[$i]['no'] = $i;
+            $data[$i]['waktu'] = $value['tanggal'];
+            $data[$i]['ket'] = 'Rp. '. number_format($value['simpanan']);
+            // $data[$i]['foto'] = $value['foto'];
 
-          $i++;
-          
+            $i++;
+            
+          }
+          $data = array_reverse($data, true);
+          $out = array_values($data);
+          echo json_encode($out);
+        }else{
+          echo json_encode(array());
         }
-        $data = array_reverse($data, true);
-        $out = array_values($data);
-        echo json_encode($out);
+        
       }
       else
       {

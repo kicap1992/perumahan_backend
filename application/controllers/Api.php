@@ -80,17 +80,30 @@ class Api extends RestController
 
   public function user_post(){
     $data = $this->post('data');
+    $total_simpanan_wajib = $data['simpanan_wajib'];
+    unset($data['simpanan_wajib']);
+    // $data = array_merge($data);
     // $data = $this->model->serialize($data);
 
     $cek_data = $this->model->tampil_data_where('tb_user',['nik_user' => $data['nik_user']])->result();
     if(count($cek_data) > 0){
       $this->response(['message' => 'ko'], 400);
     }else{
-      $data = array_merge($data,array('tanggal_pendaftaran' => date('Y-m-d H:m:s')));
+      $simpanan_wajib = array(
+        array(
+          'tahun' => date('Y'),
+          'bulan' => date('m'),
+          'tanggal_simpan' =>  date('Y-m-d H:m:s'),
+          'simpanan' => $total_simpanan_wajib
+        )
+      );
+      $data = array_merge($data,array('tanggal_pendaftaran' => date('Y-m-d H:m:s'),'simpanan_wajib' =>json_encode($simpanan_wajib),'total_simpanan_wajib' => $total_simpanan_wajib));
       $this->model->insert('tb_user',$data);
       $this->model->insert('tb_login',['username' => $data['nik_user'] , 'password' => $data['nik_user'],'nik_user' => $data['nik_user'], 'level' => 'user']);
       $this->response(['message' => 'ok','data' => $data], 200);
     }
+
+    // $this->response(['message' => 'sini untuk tambah guru','data' => $data], 200);
     
   }
 
@@ -209,109 +222,90 @@ class Api extends RestController
     $this->response(['res' => 'ok','data' => $cek_data], 200);
   }
 
+  public function simpanan_sukarela_put(){
+    $simpanan_sukarela = $this->put('simpanan_sukarela');
+    $nik_user = $this->put('nik_user');
 
-  public function barang_post(){
-    $detail = $this->post('detail');
-    $cek_data = $this->model->tampil_data_where('tb_barang',['nama_barang' => $detail['nama_barang']])->result();
-    if(count($cek_data) > 0){
-      $this->response(['res' => 'ko',], 400);
-    }else{
-      $this->model->insert('tb_barang',$detail);
-      $this->response(['res' => 'ok','data' => $detail['nama_barang']], 200);
+    $cek_data = $this->model->tampil_data_where('tb_user',['nik_user' => $nik_user])->result();
+
+    $ket_simpanan_sukarela = ($cek_data[0]->simpanan_sukarela == null) ? null : json_decode($cek_data[0]->simpanan_sukarela);
+
+    $array_simpanan_sukarela = array(
+      array(
+        'simpanan' => $simpanan_sukarela,
+        'tanggal' => date('Y-m-d H:m:s')
+      )
+    );
+
+    if ($ket_simpanan_sukarela == null) {
+      $this->model->update('tb_user',['nik_user' => $nik_user], ['simpanan_sukarela' => json_encode($array_simpanan_sukarela)]);
+    } else {
+      $array_simpanan_sukarela = array_merge($ket_simpanan_sukarela,$array_simpanan_sukarela);
+      $this->model->update('tb_user',['nik_user' => $nik_user], ['simpanan_sukarela' => json_encode($array_simpanan_sukarela)]);
     }
     
+
+    $this->response(['message' => 'sini simpanan sukarela','data' => $array_simpanan_sukarela], 200);
   }
+  
 
-  public function barang_get()
-  {
-    $where = $this->get('where');
+  public function simpanan_wajib_put(){
+    $data = $this->put('data');
+    $nik_user = $this->put('nik_user');
+    $total_simpanan_wajib = $this->put('simpanan_wajib');
 
-    
+    $cek_data = $this->model->tampil_data_where('tb_user',['nik_user' => $nik_user])->result();
 
-    $cek_data = $this->model->tampil_data_where('tb_barang',$where)->result();
+    $array_simpanan_wajib = json_decode($cek_data[0]->simpanan_wajib);
 
-    $this->response(['res' => 'ok','data' => $cek_data], 200);
-  }
+    foreach ($data as $key => $value) {
+      $datanya = explode(',', $value);
+      $tahun = $datanya[0];
+      $bulan = (strlen($datanya[1]) == 1) ? '0'.$datanya[1] : $datanya[1];
+      $arraynya = array(
+        array(
+          'tahun' => $tahun,
+          'bulan' => $bulan,
+          'tanggal_simpan' =>  date('Y-m-d H:m:s'),
+          'simpanan' => $total_simpanan_wajib
+        )
+      );
 
-  public function barang_put()
-  {
-    $where = $this->put('where');
-    $detail = $this->put('detail');
-    $cek_data = $this->model->tampil_data_where('tb_barang',$where)->result();
-
-    $tambah_stok = $detail['log_penambahan_stok'] ?? null;
-    $pinjam_stok = $detail['log_pinjaman'] ?? null;
-    $kembalian_stok = $detail['log_pengembalian'] ?? null;
-
-    if ($tambah_stok != null) {
-      $log_penambahan_stok = json_decode($cek_data[0]->log_penambahan_stok,true) ?? null;
-
-      if ($log_penambahan_stok != null){
-        $arraynya = array_merge($log_penambahan_stok,json_decode($detail['log_penambahan_stok']));
-        unset($detail['log_penambahan_stok']);
-        $detail = array_merge($detail,array('log_penambahan_stok' => json_encode($arraynya)));
-      }
-
-      
-      
+      $array_simpanan_wajib = array_merge($array_simpanan_wajib,$arraynya);
     }
 
-    if ($pinjam_stok != null) {
-      $cek_user = $this->model->tampil_data_where('tb_user',['nik_user' => json_decode($detail['log_pinjaman'],true)[0]['nik_user'] ])->result()[0];
-      $pinjaman_user = json_decode($cek_user->pinjaman_barang,true) ?? null;
-      $temp_detail = json_decode($detail['log_pinjaman'],true)[0];
-      unset($temp_detail['nik_user']);
-      $array_pinjaman_user = array(array_merge($where,$temp_detail));
-      if ($pinjaman_user == null){
-        $this->model->update('tb_user',['nik_user' => json_decode($detail['log_pinjaman'],true)[0]['nik_user'] ],['pinjaman_barang' => json_encode($array_pinjaman_user)]);
-      }else{
-        $array_pinjaman_user = array_merge($pinjaman_user,$array_pinjaman_user);
+    $this->model->update('tb_user',['nik_user' => $nik_user],['simpanan_wajib' => json_encode($array_simpanan_wajib)]);
 
-        $this->model->update('tb_user',['nik_user' => json_decode($detail['log_pinjaman'],true)[0]['nik_user'] ],['pinjaman_barang' => json_encode($array_pinjaman_user)]);
+    // $data = explode(',', $data);
+    $this->response(['message' => 'sini untuk updatenya' , 'data' => $nik_user], 200);
+  }
+
+  public function detail_koperasi_get(){
+    $all_user = $this->model->tampil_data_keseluruhan('tb_user')->result();
+    $simpanan_pokok = 0; 
+    $simpanan_wajib = 0; 
+    $simpanan_sukarela = 0; 
+
+    foreach ($all_user as $key => $value) {
+      $simpanan_pokok += $value->simpanan_pokok;
+      $array_simpanan_wajib = json_decode($value->simpanan_wajib,true);
+
+      foreach ($array_simpanan_wajib as $key1 => $value1) {
+        $simpanan_wajib += $value1['simpanan'];
       }
 
+      $array_simpanan_sukarela = ($value->simpanan_sukarela != null) ? json_decode($value->simpanan_sukarela,true) : null;
 
-      $log_pinjaman = json_decode($cek_data[0]->log_pinjaman,true) ?? null;
-
-      if ($log_pinjaman != null){
-        $arraynya = array_merge($log_pinjaman,json_decode($detail['log_pinjaman']));
-        unset($detail['log_pinjaman']);
-        $detail = array_merge($detail,array('log_pinjaman' => json_encode($arraynya)));
-      }
-    }
-
-
-    if ($kembalian_stok != null) {
-      $cek_user = $this->model->tampil_data_where('tb_user',['nik_user' => json_decode($detail['log_pengembalian'],true)[0]['nik_user'] ])->result()[0];
-      $kembalian_user = json_decode($cek_user->pengembalian_barang,true) ?? null;
-      $temp_detail = json_decode($detail['log_pengembalian'],true)[0];
-      unset($temp_detail['nik_user']);
-      $array_kembalian_user = array(array_merge($where,$temp_detail));
-      if ($kembalian_user == null){
-        $this->model->update('tb_user',['nik_user' => json_decode($detail['log_pengembalian'],true)[0]['nik_user'] ],['pengembalian_barang' => json_encode($array_kembalian_user)]);
-      }else{
-        $array_kembalian_user = array_merge($kembalian_user,$array_kembalian_user);
-
-        $this->model->update('tb_user',['nik_user' => json_decode($detail['log_pengembalian'],true)[0]['nik_user'] ],['pengembalian_barang' => json_encode($array_kembalian_user)]);
-      }
-
-
-      $log_pengembalian = json_decode($cek_data[0]->log_pengembalian,true) ?? null;
-
-      if ($log_pengembalian != null){
-        $arraynya = array_merge($log_pengembalian,json_decode($detail['log_pengembalian']));
-        unset($detail['log_pengembalian']);
-        $detail = array_merge($detail,array('log_pengembalian' => json_encode($arraynya)));
+      if ($array_simpanan_sukarela != null) {
+        foreach ($array_simpanan_sukarela as $key1 => $value1) {
+          $simpanan_sukarela += $value1['simpanan'];
+        }
       }
     }
 
+    $all_simpanan = $simpanan_pokok + $simpanan_wajib + $simpanan_sukarela;
 
-    
-
-    $this->model->update('tb_barang',$where,$detail);
-
-    $this->response(['res' => 'ok','data' => $temp_detail ?? 'tiada'], 200);
+    $this->response(['total_simpanan' => $all_simpanan , 'all_user' => count($all_user)], 200);
   }
-
 }
 
