@@ -93,13 +93,40 @@ class Api extends RestController
         array(
           'tahun' => date('Y'),
           'bulan' => date('m'),
-          'tanggal_simpan' =>  date('Y-m-d H:m:s'),
+          'tanggal_simpan' =>  date('Y-m-d H:i:s'),
           'simpanan' => $total_simpanan_wajib
         )
       );
-      $data = array_merge($data,array('tanggal_pendaftaran' => date('Y-m-d H:m:s'),'simpanan_wajib' =>json_encode($simpanan_wajib),'total_simpanan_wajib' => $total_simpanan_wajib));
+      $data = array_merge($data,array('tanggal_pendaftaran' => date('Y-m-d H:i:s'),'simpanan_wajib' =>json_encode($simpanan_wajib),'total_simpanan_wajib' => $total_simpanan_wajib));
       $this->model->insert('tb_user',$data);
-      $this->model->insert('tb_login',['username' => $data['nik_user'] , 'password' => $data['nik_user'],'nik_user' => $data['nik_user'], 'level' => 'user']);
+      $this->model->insert('tb_login',['username' => $data['nik_user'], 'password' => $data['nik_user'],'nik_user' => $data['nik_user'], 'level' => 'user']);
+
+     
+      $array_laporan = array(
+        array(
+          'tanggal' => date('Y-m-d H:i:s'),
+          'ket' => 'Penambahan User',
+          'ket_all' => array(
+            'nik_user' => $data['nik_user'],
+            'nama' => $data['nama'],
+            'alamat' => $data['alamat'],
+            'simpanan_pokok' => $data['simpanan_pokok'],
+            'simpanan_wajib' => $data['simpanan_wajib'],
+          )
+        )
+      );
+
+      $cek_laporan = $this->model->tampil_data_where('tb_laporan',['tahun' => date('Y'), 'bulan' => date('m')])->result();
+
+      if(count($cek_laporan) > 0){
+        $array_ket_laporan = json_decode($cek_laporan[0]->laporan);
+        $array_laporan =array_merge($array_ket_laporan,$array_laporan);
+        $this->model->update('tb_laporan',['tahun' => date('Y') , 'bulan' => date('m')],['laporan' => json_encode($array_laporan)]);
+      }else{
+        $this->model->insert('tb_laporan',['tahun' => date('Y') , 'bulan' => date('m'),'laporan' => json_encode($array_laporan)]);
+      }
+
+
       $this->response(['message' => 'ok','data' => $data], 200);
     }
 
@@ -201,8 +228,8 @@ class Api extends RestController
         
       }
       
-      $this->model->update('tb_user',$where,$detail);
-      $this->response(['message' => 'ok'], 200);
+      // $this->model->update('tb_user',$where,$detail);
+      $this->response(['message' => 'ok',$detail], 200);
     }else{
       $this->response(['message' => 'ko'], 400);
     }
@@ -233,7 +260,7 @@ class Api extends RestController
     $array_simpanan_sukarela = array(
       array(
         'simpanan' => $simpanan_sukarela,
-        'tanggal' => date('Y-m-d H:m:s')
+        'tanggal' => date('Y-m-d H:i:s')
       )
     );
 
@@ -244,6 +271,30 @@ class Api extends RestController
       $this->model->update('tb_user',['nik_user' => $nik_user], ['simpanan_sukarela' => json_encode($array_simpanan_sukarela)]);
     }
     
+
+    $array_laporan = array(
+      array(
+        'tanggal' => date('Y-m-d H:i:s'),
+        'ket' => 'Update Simpanan Sukarela',
+        'ket_all' => array(
+          'nik_user' => $nik_user,
+          'data' => array(
+            'simpanan' => $simpanan_sukarela,
+            'tanggal' => date('Y-m-d H:i:s')
+          ),
+        )
+      )
+    );
+
+    $cek_laporan = $this->model->tampil_data_where('tb_laporan',['tahun' => date('Y'), 'bulan' => date('m')])->result();
+
+    if(count($cek_laporan) > 0){
+      $array_ket_laporan = json_decode($cek_laporan[0]->laporan);
+      $array_laporan =array_merge($array_ket_laporan,$array_laporan);
+      $this->model->update('tb_laporan',['tahun' => date('Y') , 'bulan' => date('m')],['laporan' => json_encode($array_laporan)]);
+    }else{
+      $this->model->insert('tb_laporan',['tahun' => date('Y') , 'bulan' => date('m'),'laporan' => json_encode($array_laporan)]);
+    }
 
     $this->response(['message' => 'sini simpanan sukarela','data' => $array_simpanan_sukarela], 200);
   }
@@ -266,7 +317,7 @@ class Api extends RestController
         array(
           'tahun' => $tahun,
           'bulan' => $bulan,
-          'tanggal_simpan' =>  date('Y-m-d H:m:s'),
+          'tanggal_simpan' =>  date('Y-m-d H:i:s'),
           'simpanan' => $total_simpanan_wajib
         )
       );
@@ -277,6 +328,27 @@ class Api extends RestController
     $this->model->update('tb_user',['nik_user' => $nik_user],['simpanan_wajib' => json_encode($array_simpanan_wajib)]);
 
     // $data = explode(',', $data);
+    $array_laporan = array(
+      array(
+        'tanggal' => date('Y-m-d H:i:s'),
+        'ket' => 'Update Simpanan Wajib',
+        'ket_all' => array(
+          'nik_user' => $nik_user,
+          'data' => $data,
+        )
+      )
+    );
+
+    $cek_laporan = $this->model->tampil_data_where('tb_laporan',['tahun' => date('Y'), 'bulan' => date('m')])->result();
+
+    if(count($cek_laporan) > 0){
+      $array_ket_laporan = json_decode($cek_laporan[0]->laporan);
+      $array_laporan =array_merge($array_ket_laporan,$array_laporan);
+      $this->model->update('tb_laporan',['tahun' => date('Y') , 'bulan' => date('m')],['laporan' => json_encode($array_laporan)]);
+    }else{
+      $this->model->insert('tb_laporan',['tahun' => date('Y') , 'bulan' => date('m'),'laporan' => json_encode($array_laporan)]);
+    }
+
     $this->response(['message' => 'sini untuk updatenya' , 'data' => $nik_user], 200);
   }
 
@@ -306,6 +378,67 @@ class Api extends RestController
     $all_simpanan = $simpanan_pokok + $simpanan_wajib + $simpanan_sukarela;
 
     $this->response(['total_simpanan' => $all_simpanan , 'all_user' => count($all_user)], 200);
+  }
+
+  public function pinjaman_put(){
+    $nik_user = $this->put('nik_user');
+    $pinjaman = $this->put('pinjaman');
+
+    $cek_data = $this->model->tampil_data_where('tb_user',['nik_user' => $nik_user])->result();
+
+    $array_pinjaman = ($cek_data[0]->pinjaman != null ) ? json_decode($cek_data[0]->pinjaman)  : null ;
+    $pinjaman_array = array(
+      array(
+        'tanggal_pinjam' =>  date('Y-m-d H:i:s'),
+        'pinjaman' => $pinjaman
+      )
+    );
+
+    if ($array_pinjaman != null) {
+      $pinjaman_array = array_merge($array_pinjaman,$pinjaman_array);
+      
+    }
+
+    $this->model->update('tb_user',['nik_user' => $nik_user],['pinjaman' => json_encode($pinjaman_array)]);
+
+
+    $array_laporan = array(
+      array(
+        'tanggal' => date('Y-m-d H:i:s'),
+        'ket' => 'Pinjaman User',
+        'ket_all' => array(
+          'nik_user' => $nik_user,
+          'data' => array(
+            'pinjaman' => $pinjaman,
+            'tanggal' => date('Y-m-d H:i:s')
+          ),
+        )
+      )
+    );
+
+    $cek_laporan = $this->model->tampil_data_where('tb_laporan',['tahun' => date('Y'), 'bulan' => date('m')])->result();
+
+    if(count($cek_laporan) > 0){
+      $array_ket_laporan = json_decode($cek_laporan[0]->laporan);
+      $array_laporan =array_merge($array_ket_laporan,$array_laporan);
+      $this->model->update('tb_laporan',['tahun' => date('Y') , 'bulan' => date('m')],['laporan' => json_encode($array_laporan)]);
+    }else{
+      $this->model->insert('tb_laporan',['tahun' => date('Y') , 'bulan' => date('m'),'laporan' => json_encode($array_laporan)]);
+    }
+    
+    $this->response(['message' => 'sini untuk updatenya' ], 200);
+  }
+
+  public function cek_laporan_get()
+  {
+    $where = $this->get('where');
+
+    
+
+    $cek_data = $this->model->tampil_data_where('tb_laporan',$where)->result();
+
+
+    $this->response(['res' => 'ok','data' => count($cek_data)], 200);
   }
 }
 

@@ -41,6 +41,54 @@ class Home extends CI_Controller {
       echo json_encode($output);
     }
 
+    if ($this->input->post('proses') == "table_laporan") {
+      $list = $this->m_tabel_ss->get_datatables(array('tahun','bulan'),array(null, 'tahun','bulan',null),array('no' => 'desc'),"tb_laporan",null,null,"*");
+      $data = array();
+      $no = $_POST['start'];
+      foreach ($list as $field) {
+
+        $no++;
+        $row = array();
+        $row[] = $no;
+        $row[] = $field->tahun;
+        $row[] = $this->model->bulan($field->bulan);
+        $row[] = "<center><button type='button' onclick='href_laporan(".'"'.$field->bulan.'"'.",".$field->tahun.")' class='btn btn-primary btn-circle btn-sm waves-effect waves-light'><i class='ico fa fa-edit'></i></button></center>";
+        $data[] = $row;
+      }
+
+      $output = array(
+        "draw" => $_POST['draw'],
+        "recordsTotal" => $this->m_tabel_ss->count_all("tb_user",null,null,"*"),
+        "recordsFiltered" => $this->m_tabel_ss->count_filtered(array('nik_user','nama','tanggal_daftar','status'),array(null, 'nik_user','nama','tanggal_daftar','simpanan_pokok','status',null),array('status' => 'desc'),"tb_user",null,null,"*"),
+        "data" => $data,
+      );
+      //output dalam format JSON
+      echo json_encode($output);
+    }
+
+    if ($this->input->post('proses') == 'table_laporan_detail') {
+      $ii = 1;
+      $bulan = $this->input->post('bulan');
+      $tahun = $this->input->post('tahun');
+      $cek_data = $this->model->tampil_data_keseluruhan('tb_laporan',['tahun' => $tahun,'bulan' => $bulan])->result();
+
+      $data = json_decode($cek_data[0]->laporan,true);
+
+      foreach ($data as $key => $value) {
+        // $data1[$ii]['no'] = $ii;
+        $data1[$ii]['tanggal'] = $value['tanggal'];
+        $data1[$ii]['ket'] = $value['ket'];
+        $data1[$ii]['ket_all'] = json_encode($value['ket_all']);
+        $ii++;
+        
+      }
+      // print_r($data1);
+      // $data1 = array_reverse($data1, true);
+      $out = array_values($data1);
+      echo json_encode($out);
+      
+    }
+
     if ($this->input->post('proses') == "table_simpanan_pokok") {
       $list = $this->m_tabel_ss->get_datatables(array('nik_user','nama','tanggal_daftar','status','simpanan_pokok'),array(null, 'nik_user','nama','tanggal_daftar','simpanan_pokok','status'),array('status' => 'desc'),"tb_user",null,null,"*");
       $data = array();
