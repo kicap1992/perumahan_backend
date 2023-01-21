@@ -1,8 +1,8 @@
 ###################
-Kicap Karan - Koperasi Server
+Kicap Karan - Perumahan Server
 ###################
 
-Backend of Koperasi Project
+Backend of Perumahan Project
 
 *******************
 Release Information
