@@ -78,6 +78,42 @@ class Api extends RestController
 
   }
 
+  public function login_admin_get()
+  {
+    $where = $this->get('where');
+
+    
+    $where = array_merge($where,array('level' => 'admin'));
+    $cek_data = $this->model->tampil_data_where('tb_login',$where)->result();
+
+    if (count($cek_data) > 0 ){
+      $this->response(['res' => 'ok','url' => $cek_data[0]->level, 'level' => $cek_data[0]->level, 'nik' => $cek_data[0]->nik_admin ,'data' => $cek_data], 200);
+    }else{
+      $this->response(['res' => 'ko'], 400);
+    }
+
+
+  }
+
+  public function login_user_get()
+  {
+    $where = $this->get('where');
+
+    
+    $where = array_merge($where,array('level' => 'user'));
+    $cek_data = $this->model->tampil_data_where('tb_login',$where)->result();
+
+    if (count($cek_data) > 0 ){
+      $this->response(['res' => 'ok','url' => $cek_data[0]->level, 'level' => $cek_data[0]->level, 'nik' => $cek_data[0]->nik_user ,'data' => $cek_data], 200);
+    }else{
+      $this->response(['res' => 'ko'], 400);
+    }
+
+
+  }
+
+
+
   public function user_post(){
     $data = $this->post('data');
     $total_simpanan_wajib = $data['simpanan_wajib'];
