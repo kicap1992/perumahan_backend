@@ -21,7 +21,7 @@ class Home extends CI_Controller
     
     foreach ($check_rumah as $key) {
       // if id = $key->id, chnage fill color to red, and add onclick get_id('.$key->id.')
-      $svg = str_replace('id="' . $key->id . '"', 'id="' . $key->id . '" fill="#ff0000" onclick="get_id(' . "'".$key->id."'" . ')"', $svg);
+      $svg = str_replace('id="' . $key->id . '"', 'id="' . $key->id . '" fill="#ff0000" ', $svg);
 
       
 
@@ -33,7 +33,12 @@ class Home extends CI_Controller
       <script>
         function get_id(id) {
           // messageHandler.postMessage(id);
+          // console.log(status);
           console.log(id);
+          // array = JSON.stringify({
+          //   id: id,
+          //   status: status
+          //   })
           messageHandler.postMessage(id);
         }
       </script>
